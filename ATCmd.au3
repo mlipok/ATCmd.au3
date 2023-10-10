@@ -7,7 +7,7 @@
 ; Description ...: AT Command UDF - for control AT Modems, send SMS, get SMS
 ; Author ........: mLipok (manager, auxiliary developer), Danyfirex (prime developer)
 ; Modified ......:
-; Date ..........: 2023/10/xx
+; Date ..........: 2023/10/10
 ; Version .......: 1.2.1
 ; Remark ........: This UDF was created by Danyfirex toogether with mLipok at the turn of September and October 2020
 ; ================================================================================
@@ -359,8 +359,7 @@ Func _ATCmd_Connect($sCOMPort_DeviceName, $sPIN = '', $sCOMPortSettings = '')
 
 	__ATCmd_Instance($hCOMPort) ; save COM instance
 
-	_COMPortSetTimeouts($hCOMPort, "50,10,50,10,50")
-;~ 	_COM_SetTimeouts($hCOMPort)
+ 	_COM_SetTimeouts($hCOMPort)
 
 ;~ 	_ATCmd_CommandSync('ATQ0V1E0' & @CR) ; ATQ0 + ATE0
 
@@ -1711,32 +1710,3 @@ EndFunc   ;==>__ATCmd_UCS2HexToString
 #EndRegion ; ATCmd.au3 - PDU/UCS2 Enconde/Decode
 
 #EndRegion ; ATCmd.au3 - Functions #INTERNAL_USE_ONLY#
-
-
-Func _COMPortSetTimeouts($hCOMPort, $sTimeouts = "50,10,50,10,50")
-	Local $aReg = StringRegExp($sTimeouts, "\d{1,4}", 3)
-;~ 	_ArrayDisplay($aReg, UBound($aReg))
-
-	Local $tCOMMTIMEOUTS = DllStructCreate( _
-			'DWORD ReadIntervalTimeout;' & _
-			'DWORD ReadTotalTimeoutMultiplier;' & _
-			'DWORD ReadTotalTimeoutConstant;' & _
-			'DWORD WriteTotalTimeoutMultiplier;' & _
-			'DWORD WriteTotalTimeoutConstant')
-	Local $pCOMMTIMEOUTS = DllStructGetPtr($tCOMMTIMEOUTS)
-	DllStructSetData($tCOMMTIMEOUTS, 'ReadIntervalTimeout', Number($aReg[0]))
-	DllStructSetData($tCOMMTIMEOUTS, 'ReadTotalTimeoutMultiplier', Number($aReg[1]))
-	DllStructSetData($tCOMMTIMEOUTS, 'ReadTotalTimeoutConstant', Number($aReg[2]))
-	DllStructSetData($tCOMMTIMEOUTS, 'WriteTotalTimeoutMultiplier', Number($aReg[3]))
-	DllStructSetData($tCOMMTIMEOUTS, 'WriteTotalTimeoutConstant', Number($aReg[4]))
-	Local $aCall = DllCall($__g_hCOMUDF_Kernel32, _
-			'bool', 'SetCommTimeouts', _
-			'handle', $hCOMPort, _
-			'long_ptr', $pCOMMTIMEOUTS)
-	If Not $aCall[0] Then
-;~ 		_DebugConsoleAppendRed("SetTimeouts FAIL - (" & $sTimeouts & ")" & @CRLF)
-	Else
-;~ 		_DebugConsoleAppendGreen("SetTimeouts OK - (" & $sTimeouts & ")" & @CRLF)
-	EndIf
-
-EndFunc   ;==>_COMPortSetTimeouts
